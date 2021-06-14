@@ -1,0 +1,33 @@
+---
+- hosts: servers
+  become: yes
+  vars:
+    ansible_user: "root"
+  tasks:
+  - name: Update apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Upgrade all apt packages
+    apt: upgrade=dist
+
+  - name: Install dependencies and Nginx
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - nginx
+
+  - name: Start Nginx
+    service:
+      name: nginx
+      state: started
+    
+  - name: Copy index.html to the document root folder
+    ansible.builtin.copy:
+      src: /home/kvs/SetupNginx/index.html
+      dest: /var/www/html
+      owner: www-data
+      group: www-data
+      mode: '0644'
